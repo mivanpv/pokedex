@@ -1,0 +1,6 @@
+{
+  "name": "Pokédex Web",
+  "description": "Una aplicación web de Pokédex moderna, interactiva y responsive para buscar y consultar información de Pokémon usando la PokéAPI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

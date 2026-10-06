@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokédex Web — Consola Retro</title>
+    <meta name="description" content="Una aplicación web de Pokédex retro minimalista, interactiva y responsive para consultar información oficial de Pokémon usando la PokéAPI." />
+    <meta property="og:title" content="Pokédex Web — Consola Retro" />
+    <meta property="og:description" content="Una aplicación web de Pokédex retro minimalista, interactiva y responsive para consultar información oficial de Pokémon usando la PokéAPI." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="pokedex-console" role="region" aria-label="Consola Pokédex">
+      <!-- Barra superior de hardware con luces canónicas -->
+      <header class="console-header">
+        <div class="pokedex-lights" aria-hidden="true">
+          <span class="light-big" title="Sensor principal"></span>
+          <div class="mini-lights-cluster">
+            <span class="light-mini light-red" title="Alimentación"></span>
+            <span class="light-mini light-yellow" title="Procesador"></span>
+            <span class="light-mini light-green" title="Conexión PokéAPI"></span>
+          </div>
+        </div>
+
+        <div class="console-brand-zone">
+          <span class="brand-title">POKÉDEX</span>
+          <span class="brand-sub">SISTEMA RECEPTOR PORTÁTIL</span>
+        </div>
+
+        <div class="console-actions-zone">
+          <button type="button" class="retro-nav-btn" id="open-collection-btn" aria-label="Ver mi colección de Pokémon" title="Abrir mi colección guardada">
+            <span>⭐</span>
+            <span class="btn-text">COLECCIÓN</span>
+            <span class="badge-counter" id="collection-count-badge">0</span>
+          </button>
+
+          <button type="button" class="retro-nav-btn" id="open-cart-btn" aria-label="Ver Portafolio de cartas TCG" title="Abrir mi Portafolio TCG de inversión informativa">
+            <span>💼</span>
+            <span class="btn-text">PORTAFOLIO</span>
+            <span class="badge-counter" id="cart-count-badge">0</span>
+          </button>
+
+          <button type="button" class="retro-audio-toggle active" id="audio-fx-toggle" aria-label="Alternar efectos de sonido retro" title="Sonidos retro táctiles">
+            <span class="audio-led"></span>
+            <span>SONIDO</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Arquitectura de doble panel (Consola dual en desktop, apilada en móvil) -->
+      <div class="console-grid">
+        <!-- Panel Izquierdo: Pantalla LCD y Visor de Especímenes -->
+        <div class="screen-deck">
+          <div class="screen-bezel">
+            <div class="screen-bezel-top">
+              <span class="bezel-led-dot"></span>
+              <span class="bezel-spec-text">VISOR MATRICIAL · ALTA DEFINICIÓN</span>
+              <span class="bezel-vents" aria-hidden="true">|||||</span>
+            </div>
+
+            <!-- Contenedor dinámico del Pokémon con estados accesibles -->
+            <main id="pokedex-container" class="screen-viewport" aria-live="polite">
+              <div class="loading-state">
+                <div class="pokeball-spinner" aria-hidden="true"></div>
+                <p>Iniciando terminal Pokédex...</p>
+              </div>
+            </main>
+
+            <div class="screen-bezel-bottom">
+              <span class="bezel-copyright">POKÉAPI SPECIMEN DATABASE</span>
+              <span class="bezel-serial">ID: 8FB3-AA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Módulo de Controles, Búsqueda y Archivo -->
+        <div class="control-deck">
+          <!-- 01. Módulo de Búsqueda Directa -->
+          <section class="control-card search-card" aria-label="Buscador directo de Pokémon">
+            <div class="card-kicker-row">
+              <span class="retro-kicker">01. BÚSQUEDA DIRECTA</span>
+              <span class="status-indicator">ONLINE</span>
+            </div>
+
+            <div class="search-wrapper">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Nombre o ID (ej. Pikachu)..."
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Nombre o ID del Pokémon a buscar"
+              />
+              <button id="search-btn" type="button" aria-label="Ejecutar búsqueda">
+                <svg class="search-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>BUSCAR</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- 02. Diccionario Alfabético con Filtro Previo por Tipo -->
+          <section class="control-card dictionary-section" aria-label="Filtro por tipo y diccionario alfabético">
+            <div class="card-kicker-row">
+              <span class="retro-kicker">02. ÍNDICE POR TIPO Y LETRA</span>
+              <span class="dictionary-status" id="dictionary-status">Indexando...</span>
+            </div>
+
+            <!-- Paso 1: Filtro por Tipo -->
+            <div class="type-filter-section" aria-label="Filtro elemental">
+              <div class="type-filter-label-row">
+                <span class="filter-step-label">TIPO SELECCIONADO:</span>
+                <span class="active-type-name" id="active-type-name">TODOS</span>
+              </div>
+              <div class="type-chips-rail" id="type-chips-rail" role="radiogroup" aria-label="Tipos elementales de Pokémon">
+                <!-- Botón 'Todos' y tipos generados por app.js -->
+              </div>
+            </div>
+
+            <!-- Paso 2: Abecedario A - Z -->
+            <div class="alphabet-label-row">
+              <span class="filter-step-label">FILTRAR POR PRIMERA LETRA:</span>
+            </div>
+            <div class="alphabet-grid" id="alphabet-grid" role="group" aria-label="Seleccionar primera letra">
+              <!-- Letras A - Z generadas por app.js -->
+            </div>
+
+            <!-- Resultados desplegables de la letra -->
+            <div class="letter-results" id="letter-results" hidden>
+              <div class="letter-results-header">
+                <div class="letter-badge-info">
+                  <span class="active-letter-badge" id="active-letter-badge">A</span>
+                  <span class="letter-count" id="letter-count">Cargando...</span>
+                </div>
+                <button type="button" class="close-results-btn" id="close-results-btn" aria-label="Cerrar resultados alfabéticos">✕</button>
+              </div>
+              <div class="letter-pokemon-list" id="letter-pokemon-list" role="list">
+                <!-- Miniaturas de Pokémon filtrados -->
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script de lógica de la aplicación -->
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
